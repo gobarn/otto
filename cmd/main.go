@@ -1,10 +1,27 @@
 package main
 
 import (
-    "github.com/allyraza/otto"
+	"flag"
+	"fmt"
+	"os"
+
+	"github.com/allyraza/otto"
 )
 
+var (
+	config = flag.String("config", "", "config file for otto.")
+)
+
+func init() {
+	flag.Parse()
+}
+
 func main() {
-    o := &otto.Otto{}
-    o.Start()
+	if *config == "" {
+		fmt.Println("config file is missing.")
+		os.Exit(1)
+	}
+
+	o := otto.New()
+	o.Start()
 }
