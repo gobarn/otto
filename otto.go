@@ -2,6 +2,7 @@ package otto
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"sync"
@@ -20,21 +21,22 @@ type Config struct {
 // Otto to hold data
 type Otto struct {
 	sync.Mutex
-	config         Config
+	config         *Config
 	started        bool
 	workerManagers map[string]*WorkerManager
 	scheduler      *Scheduler
 }
 
 // New create a new struct
-func New() *Otto {
+func New(config *Config) *Otto {
 	return &Otto{
+		config:         config,
 		workerManagers: make(map[string]*WorkerManager),
 	}
 }
 
 // Start starts the otto broker
-func (o *Otto) Start() {
+func (o *Otto) Start() error {
 	o.Lock()
 	defer o.Unlock()
 
@@ -55,19 +57,26 @@ func (o *Otto) Start() {
 		o.started = true
 		fmt.Println("Otto started ...")
 	}
+
+	return nil
+}
+
+// Stop will stop otto broker
+func (o *Otto) Stop() {
+}
+
+// Register a worker with broker
+func (o *Otto) Register(worker *Worker) {
+	log.Println("New worker registered.")
+	o.workerManagers[worker.Queue] = NewWorkerManager(worker, o.config)
 }
 
 // Enqueue a job
-func (o *Otto) Enqueue(name string, job interface{}) {
-	o.workerManagers[name] = NewWorkerManager()
+func (o *Otto) Enqueue(name string, job Job) {
 }
 
 func (o *Otto) startWorkerManagers() {
 	for _, wm := range o.workerManagers {
 		wm.start()
 	}
-}
-
-// Stop will stop otto broker
-func (o *Otto) Stop() {
 }
